@@ -62,7 +62,7 @@ const LoginForm = () => {
                 {loader && <button className='w-[80%] h-10 bg-gradient-to-bl from-[#B100A2] to-[#624AD7] mt-10 rounded-md text-white font-bold text-lg flex items-center justify-center' onClick={handleLogin}><MoonLoader size={20} color='white' className='font-bold' speedMultiplier={0.8} /></button>}
                 <button className='w-[80%] h-10 bg-[#EFEFEF] mt-5 rounded-md flex items-center justify-center font-semibold'><FcGoogle className='text-xl mr-5' />Sign in With Google</button>
             </form>
-            <h1 className='mt-5'>Don't have an Account ? <a className='text-[#B100A2] hover:cursor-pointer hover:underline' onClick={()=>{navigate('/signup',{replace: true});}}>Signup now</a></h1>
+            <h1 className='mt-5'>Don&apos;t have an Account ? <a className='text-[#B100A2] hover:cursor-pointer hover:underline' onClick={()=>{navigate('/signup',{replace: true});}}>Signup now</a></h1>
             <ToastContainer
                 position="top-right"
                 autoClose={5000}

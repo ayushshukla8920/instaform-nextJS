@@ -93,7 +93,7 @@ const Analytic = () => {
         responses.map((form, index) => (
           <div key={index} className={`${theme == 'light' ? 'bg-white':'bg-[#101010]'} shadow-md rounded-lg flex flex-col py-3 px-10 justify-between`}>
             {Object.entries(form).map(([key, value], idx) => (
-              <h1 key={idx}><strong>{key}:</strong> {value}</h1>  // ✅ Prints "key: value"
+              <h1 key={idx}><strong>{key}:</strong> {value}</h1>
             ))}
           </div>
         ))

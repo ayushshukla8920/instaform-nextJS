@@ -37,17 +37,6 @@ export const GlobalProvider = ({ children }) => {
       }
     }
   }, []);
-  const fetchForms = async (token,setFormData) => {
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/user/forms`, { token });
-      setFormData(response.data);
-    } catch (error) {
-      console.error("Error fetching forms:", error);
-    }
-  };
-  useEffect(()=>{
-    fetchForms(token,setFormData);
-  },[]);
   useEffect(() => {
     if (token) {
       handleUser(token).then((data) => setUser(data));

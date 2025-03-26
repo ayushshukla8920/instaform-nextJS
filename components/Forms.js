@@ -1,5 +1,5 @@
 "use client"
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { TbCopy } from "react-icons/tb";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
@@ -10,6 +10,7 @@ import { useGlobalContext } from '@/context/GlobalContext';
 
 const Forms = () => {
   const { token,formData,setFormData,theme } = useGlobalContext();
+  const [loading,setLoading] = useState(true);
   const router = useRouter();
   const fetchForms = async (setFormData) => {
     try {
@@ -18,6 +19,7 @@ const Forms = () => {
     } catch (error) {
       console.error("Error fetching forms:", error);
     }
+    setLoading(false);
   };
   const handleAnalytics = async(formNo)=>{
     router.push(`/forms/analytics/${formNo}`);
@@ -111,7 +113,7 @@ const Forms = () => {
             </div>
           ))
         ) : (
-          <p className="text-gray-500">No forms available.</p>
+          <p className="text-gray-500">{!loading ? 'No forms available':'Loading....'}</p>
         )}
       </div>
       <ToastContainer

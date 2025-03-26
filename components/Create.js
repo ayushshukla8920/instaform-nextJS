@@ -166,8 +166,8 @@ const Create = () => {
                 <div className='flex items-center justify-center mt-10'>
                   <h1 className={`${theme=='light' ? 'text-black': 'text-white'} text-2xl font-bold tracking-tighter mr-3`}>URL to Form : </h1>
                   <p className='text-xl text-blue-500 break-words'>{formUrl}</p>
-                  <TbCopy onClick={copyToClipboard} className='ml-3 text-3xl hover:cursor-pointer' />
-                  <a href={formUrl} target='_blank'><HiMiniArrowTopRightOnSquare className='ml-3 text-3xl hover:cursor-pointer' /></a>
+                  <TbCopy onClick={copyToClipboard} className={`${theme=='light' ? 'text-black': 'text-white'} ml-3 text-3xl hover:cursor-pointer`}/>
+                  <a href={formUrl} target='_blank'><HiMiniArrowTopRightOnSquare className={`${theme=='light' ? 'text-black': 'text-white'} ml-3 text-3xl hover:cursor-pointer`} /></a>
                 </div>
               </div>
           </div>

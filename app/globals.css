@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+@keyframes slide {
+    0% { left: -33%; }
+    100% { left: 100%; }
+}
+
+.animate-slide {
+    animation: slide 1.2s infinite linear;
+}

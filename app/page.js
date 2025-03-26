@@ -1,18 +1,30 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import Reacts from 'react';
+"use client";
+import { useEffect, useState } from "react";
+import { redirect } from "next/navigation";
+import Create from "@/components/Create";
+import Sidebar from "@/components/Sidebar";
+import { useGlobalContext } from "@/context/GlobalContext";
+import Splash from "@/components/Splash";
 
-const Page = async() => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-  if(!token){
-    redirect('/login');
-  }
+const Page = () => {
+  const {loading,setFadeOut,setLoading} = useGlobalContext();
+  useEffect(() => {
+    setTimeout(() => {
+        setFadeOut(true);
+        setTimeout(() => setLoading(false), 500);
+    }, 2000);
+  }, []);
   return (
-    <div className='bg-black text-white text-3xl font-semibold w-full min-h-screen'>
-      This website is under Maintenance 
-    </div>
-  )
-}
+    <>
+      {loading ? (<Splash />) :
+        (
+        <div className='bg-black text-white text-3xl font-semibold w-full h-screen flex flex-col'>
+          <Sidebar tabSelected={0}/> 
+          <Create />
+        </div>
+      )}
+    </>
+  );
+};
 
-export default Page
+export default Page;

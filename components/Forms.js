@@ -95,7 +95,7 @@ const Forms = () => {
       <div className="flex flex-col gap-3">
         {formData.length > 0 ? (
           formData.map((form, index) => (
-            <div key={index} className={`${theme=='light' ? 'bg-white' : 'bg-[#101010] text-white' } shadow-md rounded-lg flex items-center gap-10 py-3 px-10 justify-between`}>
+            <div key={index} className={`${theme=='light' ? 'bg-white text-black' : 'bg-[#101010] text-white' } shadow-md rounded-lg flex items-center gap-10 py-3 px-10 justify-between`}>
               <h2 className="text-xl font-semibold w-[20%]">{form.formName}</h2>
               <div className='flex items-center justify-center w-[50%]'>
                 <p className="text-blue-500 text-lg">{`${process.env.NEXT_PUBLIC_URL}/api/ai/form/${form.formNo}`}</p>

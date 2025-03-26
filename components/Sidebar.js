@@ -1,14 +1,11 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useGlobalContext } from "@/context/GlobalContext";
 import { Moon, Sun } from "lucide-react";
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
-
 const Sidebar = (props) => {
   const {tabSelected}= props; 
   const {theme,setTheme,user} = useGlobalContext();
-  console.log(props);
   const themeSetter = ()=>{
       if(theme == 'light'){
         setTheme('dark');
@@ -44,7 +41,6 @@ const Sidebar = (props) => {
       <div className='flex flex-col justify-center items-center gap-5'>
         <div className='flex items-center justify-center'>
           <button className='flex items-center justify-center gap-3 hover:cursor-pointer'>
-            {/* <Avatar name={user.name} size='50' className='rounded-full'/> */}
             <h1 className={`font-bold text-xl tracking-tight ${theme=='light'? 'text-black' : 'text-white'}`}>{user.name}</h1>
           </button>
         </div>

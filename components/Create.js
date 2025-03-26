@@ -85,14 +85,14 @@ const Create = () => {
             },
             body: JSON.stringify({ prompt, token }),
         });
-          
-        const data = await response.json();          
-        if(response.data.msg == 'Success'){
-          setFormUrl(`https://instaform.vercel.app/api/ai/form/${response.data.formNo}`);
+        const data = await response.json(); 
+        console.log(data);         
+        if(data.msg == 'Success'){
+          setFormUrl(`https://instaform.vercel.app/api/ai/form/${data.formNo}`);
           setPrompt('');
         }
-        if(response.data.error){
-          toast.error(response.data.error, {
+        if(data.error){
+          toast.error(data.error, {
               position: "top-right",
               autoClose: 5000,
               hideProgressBar: false,
@@ -106,6 +106,7 @@ const Create = () => {
         }
       }
       catch(error){
+        console.error(error);
         toast.error('Something went wrong !!', {
           position: "top-right",
           autoClose: 5000,

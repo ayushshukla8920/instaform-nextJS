@@ -7,7 +7,7 @@ export const POST = async(req)=>{
     connectToDB();
     try {
         const {token} = await req.json();
-        const {email} = jwt.decode(token,process.env.JWT_SECRET);
+        const {email} = jwt.decode(token);
         console.log(typeof(email));
         if(!token){
             return NextResponse.json({error: "Un-Authorised Access"},{status: 200});

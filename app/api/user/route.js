@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const user = require('@/models/user');
 
 export const POST = async(req)=>{
-    await connectToDB();
+    connectToDB();
     try {
         const {token} = await req.json();
         console.log(token);
@@ -16,6 +16,7 @@ export const POST = async(req)=>{
             return NextResponse.json({error: "Un-Authorised Access"},{status: 200});
         }
         const userResponse = await user.findOne({email});
+        console.log(userResponse);
         if(!userResponse){
             return NextResponse.json({error: "Un-Authorised Access"},{status: 200});
         }

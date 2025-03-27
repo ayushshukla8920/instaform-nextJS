@@ -7,20 +7,16 @@ export const POST = async(req)=>{
     connectToDB();
     try {
         const {token} = await req.json();
-        console.log(token);
-        const payload = jwt.verify(token,process.env.JWT_SECRET);
-        console.log(payload);
+        const payload = jwt.decode(token,process.env.JWT_SECRET);
         const email = payload.email;
-        console.log(process.env.JWT_SECRET);
         if(!token){
             return NextResponse.json({error: "Un-Authorised Access"},{status: 200});
         }
-        const userResponse = await user.find({});
-        console.log(userResponse);
+        const userResponse = await user.find({email});
         if(!userResponse){
             return NextResponse.json({error: "Un-Authorised Access"},{status: 200});
         }
-        return NextResponse.json(userResponse,{status: 200});
+        return NextResponse.json(userResponse[0],{status: 200});
     } catch (error) {
         console.log(error);
         return NextResponse.json({error: "Something went wrong"},{status: 500});

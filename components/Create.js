@@ -8,6 +8,7 @@ import { HiMiniArrowTopRightOnSquare } from "react-icons/hi2";
 import FadeLoader from "react-spinners/FadeLoader";
 import { TbCopy } from "react-icons/tb";
 import { useGlobalContext } from '@/context/GlobalContext';
+import axios from 'axios';
 
 const Create = () => {
     const {user,token,theme} = useGlobalContext();
@@ -73,20 +74,15 @@ const Create = () => {
           theme: 'colored',
       });
     };
-
     const handleSubmit = async(e) => {
       e.preventDefault();
       setLoader('true');
       try{
-        const response = await fetch('/api/ai/generate-content', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ prompt, token }),
-        });
-        const data = await response.json(); 
-        console.log(data);         
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/ai/generate-content`,{
+          prompt,token
+        })
+        const data = response.data;
+        console.log(data);       
         if(data.msg == 'Success'){
           setFormUrl(`https://instaform.vercel.app/api/ai/form/${data.formNo}`);
           setPrompt('');

@@ -8,10 +8,19 @@ import { useGlobalContext } from '@/context/GlobalContext'
 const Analytics = () => {
   const {loading,setFadeOut,setLoading} = useGlobalContext();
   useEffect(() => {
-      setTimeout(() => {
-          setFadeOut(true);
-          setTimeout(() => setLoading(false), 500);
-      }, 2000);
+    const cookieToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
+
+    if (!cookieToken) {
+      window.location.href = '/login';
+    }
+
+    setTimeout(() => {
+        setFadeOut(true);
+        setTimeout(() => setLoading(false), 500);
+    }, 2000);
   }, []);
   return (
     <>

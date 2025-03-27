@@ -19,7 +19,8 @@ const Sidebar = (props) => {
   return (
     <div className={`flex justify-between flex-col min-h-screen w-[17%] fixed ${theme=='light'? 'bg-[#D8D8D8]' : 'bg-[#101010]'} py-5`}>
       <div>
-        <div className='flex justify-center items-center mt-5'>
+        <div className='flex justify-center items-center mt-5 flex-col'>
+          <img src='/icon.png' className='h-[7vh]' />
           <h1 className='text-3xl font-bold tracking-tighter bg-gradient-to-bl from-[#B100A2] to-[#624AD7] text-transparent bg-clip-text'>instaform.ai</h1>
         </div>
         <div className='mt-[10vh] flex flex-col gap-5 text-white text-3xl font-bold tracking-tighter ml-5'>
@@ -45,7 +46,7 @@ const Sidebar = (props) => {
           </button>
         </div>
         <div className='flex items-center justify-between gap-10'>
-          <button className='text-xl font-bold tracking-tighter bg-red-500 rounded-md w-[15vh] h-8'>Logout</button>
+          <a href='/logout'><button className='text-xl font-bold tracking-tighter bg-red-500 rounded-md w-[15vh] h-8 hover:cursor-pointer'>Logout</button></a>
           <button onClick={themeSetter}>
             {theme == 'light' ? <Sun className={`left-1 w-6 h-6 ml-1 ${theme == 'light' ? 'text-black' : 'text-white'}`} />:<Moon className={`left-1 w-6 h-6 ml-1 ${theme == 'dark' ? 'text-white' : 'text-black'}`} />}
           </button>

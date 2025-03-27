@@ -1,16 +1,15 @@
 "use client"
 import axios from "axios";
+import { redirect } from "next/navigation";
 import { createContext, useState, useContext, useEffect } from "react";
 
 const GlobalContext = createContext();
 
 async function handleUser(token) {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/user`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/user`, {
+      token: token
     });
-    return response.json();
+    return response.data;
 }
 export const GlobalProvider = ({ children }) => {
   const [formData, setFormData] = useState([]);
@@ -30,11 +29,7 @@ export const GlobalProvider = ({ children }) => {
         .split("; ")
         .find((row) => row.startsWith("token="))
         ?.split("=")[1];
-      if (!cookieToken) {
-        redirect("/login");
-      } else {
-        setToken(cookieToken);
-      }
+      setToken(cookieToken);
     }
   }, []);
   useEffect(() => {

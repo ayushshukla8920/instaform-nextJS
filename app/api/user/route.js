@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const user = require('@/models/user');
 
 export const POST = async(req)=>{
-    connectToDB();
+    await connectToDB();
     try {
         const {token} = await req.json();
         console.log(token);

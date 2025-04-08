@@ -94,18 +94,21 @@ const Forms = () => {
         Your Forms:
       </h1>
       <br /><hr /><br />
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 pb-[10vh]">
         {formData.length > 0 ? (
           formData.map((form, index) => (
-            <div key={index} className={`${theme=='light' ? 'bg-white text-black' : 'bg-[#101010] text-white' } shadow-md rounded-lg flex items-center gap-10 py-3 px-10 justify-between`}>
+            <div key={index} className={`${theme=='light' ? 'bg-white text-black' : 'bg-[#101010] text-white' } shadow-md rounded-lg flex items-center gap-5 py-3 px-10 justify-between`}>
               <h2 className="text-xl font-semibold w-[20%]">{form.formName}</h2>
               <div className='flex items-center justify-center w-[50%]'>
                 <p className="text-blue-500 text-lg">{`${process.env.NEXT_PUBLIC_URL}/api/ai/form/${form.formNo}`}</p>
                 <TbCopy onClick={()=>{copyToClipboard(`${process.env.NEXT_PUBLIC_URL}/api/ai/form/${form.formNo}`)}} className='ml-10 text-xl hover:cursor-pointer' />
                 <a href={`${process.env.NEXT_PUBLIC_URL}/api/ai/form/${form.formNo}`} target='_blank'><HiMiniArrowTopRightOnSquare className='ml-3 text-xl hover:cursor-pointer' /></a>
               </div>
-              <button onClick={()=>{handleAnalytics(form.formNo)}} className="hover:cursor-pointer px-4 py-2 bg-gradient-to-bl from-[#B100A2] to-[#624AD7] text-lg text-white rounded w-[20%]">
+              <button onClick={()=>{handleAnalytics(form.formNo)}} className="hover:cursor-pointer px-4 py-2 bg-gradient-to-bl from-[#B100A2] to-[#624AD7] text-lg text-white rounded w-[12%]">
                 Analytics
+              </button>
+              <button onClick={()=>{router.push('/editor/'+form.formNo)}} className="hover:cursor-pointer px-4 py-2 bg-blue-600 text-lg text-white rounded w-[8%]">
+                Editor
               </button>
               <button onClick={()=>{handleDelete(form.formNo)}} className="h-10 w-10 text-white rounded flex items-center justify-center hover:cursor-pointer">
                 <MdDelete className='text-3xl text-red-500' />

@@ -8,12 +8,10 @@ export const POST = async(req)=>{
     try {
         const {token} = await req.json();
         const email = jwt.decode(token);
-        console.log(email);
         if(!token){
             return NextResponse.json({error: "Un-Authorised Access"},{status: 200});
         }
         const userResponse = await user.find({email});
-        console.log(userResponse);
         if(!userResponse){
             return NextResponse.json({error: "Un-Authorised Access"},{status: 200});
         }

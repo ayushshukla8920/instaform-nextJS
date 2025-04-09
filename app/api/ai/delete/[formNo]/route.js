@@ -8,7 +8,7 @@ export const POST = async(req, {params})=>{
     try {
         const {formNo} = await params;
         const {token} = await req.json();
-        const {email} = jwt.verify(token,process.env.JWT_SECRET);
+        const email = jwt.decode(token);
         const userResponse = await user.find({email});
         if(!token){
             return NextResponse.json({error: "Un-Authorised Access"},{status: 200});

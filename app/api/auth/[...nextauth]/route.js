@@ -9,12 +9,14 @@ export const Authoptions = {
       clientSecret: process.env.OAUTH_SECRET,
     }),
   ],
-  secret: '48d5c4d9913e4cb1abcf3f6a05a86b3c',
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async signIn({ profile }) {
-      console.log('hello');
       if (!profile || !profile.email) return false;
-      const token = jsonwebtoken.sign({ email: profile.email,name: profile.name,image: profile.picture },process.env.JWTSECRET);
+      const token = jsonwebtoken.sign(
+        { email: profile.email, name: profile.name, image: profile.picture },
+        process.env.JWT_SECRET
+      );
       return `/api/callback/${token}`;
     },
   },

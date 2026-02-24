@@ -1,16 +1,14 @@
-"use client"
+"use client";
 import axios from "axios";
-import { redirect } from "next/navigation";
 import { createContext, useState, useContext, useEffect } from "react";
 
 const GlobalContext = createContext();
 
 async function handleUser(token) {
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/user`, {
-      token: token
-    });
-    return response.data;
+  const response = await axios.post(`/api/user`, { token });
+  return response.data;
 }
+
 export const GlobalProvider = ({ children }) => {
   const [formData, setFormData] = useState([]);
   const [theme, setTheme] = useState("");
@@ -18,13 +16,14 @@ export const GlobalProvider = ({ children }) => {
   const [user, setUser] = useState({});
   const [loading, setLoading] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
+
   useEffect(() => {
-      if (typeof document !== "undefined") {
+    if (typeof document !== "undefined") {
       const savedTheme = localStorage.getItem("theme");
-      if(!savedTheme){
-        localStorage.setItem('theme','dark');
+      if (!savedTheme) {
+        localStorage.setItem("theme", "dark");
       }
-      setTheme(savedTheme || 'dark');
+      setTheme(savedTheme || "dark");
       const cookieToken = document.cookie
         .split("; ")
         .find((row) => row.startsWith("token="))
@@ -32,14 +31,30 @@ export const GlobalProvider = ({ children }) => {
       setToken(cookieToken);
     }
   }, []);
+
   useEffect(() => {
     if (token) {
-      handleUser(token).then((data) => setUser(data));
+      handleUser(token)
+        .then((data) => {
+          if (data && !data.error) {
+            setUser(data);
+          }
+        })
+        .catch((err) => console.error("Failed to fetch user:", err));
     }
   }, [token]);
 
   return (
-    <GlobalContext.Provider value={{ token, setToken, fadeOut, setFadeOut, loading, setLoading, user , setUser , theme, setTheme, formData, setFormData }}>
+    <GlobalContext.Provider
+      value={{
+        token, setToken,
+        fadeOut, setFadeOut,
+        loading, setLoading,
+        user, setUser,
+        theme, setTheme,
+        formData, setFormData,
+      }}
+    >
       {children}
     </GlobalContext.Provider>
   );

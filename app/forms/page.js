@@ -1,12 +1,13 @@
-"use client"
-import Sidebar from '@/components/Sidebar';
-import Splash from '@/components/Splash';
-import { useEffect, useState } from 'react';
+"use client";
+import Sidebar from "@/components/Sidebar";
+import Splash from "@/components/Splash";
+import { useEffect } from "react";
 import { useGlobalContext } from "@/context/GlobalContext";
-import Forms from '@/components/Forms';
+import Forms from "@/components/Forms";
 
 const Page = () => {
-  const {loading,setFadeOut,setLoading} = useGlobalContext();
+  const { loading, setFadeOut, setLoading } = useGlobalContext();
+
   useEffect(() => {
     const cookieToken = document.cookie
       .split("; ")
@@ -14,25 +15,28 @@ const Page = () => {
       ?.split("=")[1];
 
     if (!cookieToken) {
-      window.location.href = '/login';
+      window.location.href = "/login";
+      return;
     }
 
     setTimeout(() => {
-        setFadeOut(true);
-        setTimeout(() => setLoading(false), 500);
-    }, 2000);
+      setFadeOut(true);
+      setTimeout(() => setLoading(false), 500);
+    }, 1500);
   }, []);
+
   return (
     <>
-      {loading ? (<Splash />) :
-        (
-        <div className='bg-black text-white text-3xl font-semibold w-full min-h-screen'>
-          <Sidebar tabSelected={1}/> 
+      {loading ? (
+        <Splash />
+      ) : (
+        <>
+          <Sidebar tabSelected={1} />
           <Forms />
-        </div>
+        </>
       )}
     </>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

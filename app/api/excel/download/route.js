@@ -1,20 +1,25 @@
-import connectToDB from "@/lib/db"
+import connectToDB from "@/lib/db";
 import { NextResponse } from "next/server";
 const Analytics = require('@/models/analytics');
 const user = require('@/models/user');
 const Form = require('@/models/Form');
 const jwt = require('jsonwebtoken');
 
-export const POST = async(req)=>{
-    connectToDB();
+export const POST = async (req) => {
+    await connectToDB();
     try {
         const body = await req.json();
         const { formNo, token } = body;
-        console.log(body);
         if (!token) {
             return NextResponse.json({ error: "Un-Authorised Access" }, { status: 200 });
         }
-        const {email} = jwt.verify(token, process.env.JWT_SECRET);
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (e) {
+            return NextResponse.json({ error: "Invalid or expired token" }, { status: 200 });
+        }
+        const email = typeof decoded === 'string' ? decoded : decoded.email;
         if (!email) {
             return NextResponse.json({ error: "Un-Authorised Access" }, { status: 200 });
         }
@@ -37,7 +42,10 @@ export const POST = async(req)=>{
         const keys = Object.keys(data[0]);
         let csv = keys.join(",") + "\n";
         data.forEach(obj => {
-            const temp = keys.map(key => obj[key]).join(",");
+            const temp = keys.map(key => {
+                const val = String(obj[key] || "").replace(/"/g, '""');
+                return val.includes(",") ? `"${val}"` : val;
+            }).join(",");
             csv += temp + "\n";
         });
         const headers = new Headers();

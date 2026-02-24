@@ -1,188 +1,254 @@
-"use client"
-import React, { useEffect, useState } from 'react'
-import { MdOutlineContactPage } from "react-icons/md";
-import { MdOutlineFeedback } from "react-icons/md";
-import { FaQuestion,FaRegUser,FaArrowRight } from "react-icons/fa";
-import { ToastContainer, toast, Bounce } from 'react-toastify';
-import { HiMiniArrowTopRightOnSquare } from "react-icons/hi2";
-import FadeLoader from "react-spinners/FadeLoader";
-import { TbCopy } from "react-icons/tb";
-import { useGlobalContext } from '@/context/GlobalContext';
-import axios from 'axios';
+"use client";
+import React, { useState } from "react";
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import { useGlobalContext } from "@/context/GlobalContext";
+import axios from "axios";
+import {
+  Copy, ExternalLink, X, Loader2, Sparkles,
+  MessageSquare, ClipboardList, HelpCircle, UserRound, CheckCircle2,
+} from "lucide-react";
 
 const Create = () => {
-    const {user,token,theme} = useGlobalContext();
-    const [prompt,setPrompt] = useState('');
-    const [loader,setLoader] = useState("");
-    const [promptlength,setPromptLength] = useState(0);
-    const [formUrl, setFormUrl] = useState(null)
-    useEffect(() => {
-        setPromptLength(prompt.length);
-    }, [prompt]);
-    
-    const handlePaste = (e) => {
-        const pastedData = e.clipboardData.getData('text');
-        if (pastedData.length + prompt.length > 10000) {
-          e.preventDefault();
-          const remainingChars = 10000 - prompt.length;
-          setPrompt(prompt + pastedData.slice(0, remainingChars));
-        }
-    };
+  const { user, token, theme } = useGlobalContext();
+  const isDark = theme !== "light";
+  const [prompt, setPrompt] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [formUrl, setFormUrl] = useState(null);
 
-    const commonPrompts = (n) => {
+  const promptTemplates = [
+    {
+      title: "Contact Form",
+      desc: "Professional contact with validation",
+      icon: ClipboardList,
+      prompt:
+        "Create a professional Contact Us form with these sections:\n- Personal Info: Full Name (required, placeholder: 'John Doe'), Email Address (required, email type), Phone Number (optional, tel type with placeholder '+1 (555) 000-0000').\n- Message Section: Subject dropdown (General Inquiry, Technical Support, Partnership, Feedback, Other), Message textarea (required, min 50 chars, placeholder: 'Tell us how we can help you...').\n- Preferred contact method: radio buttons (Email, Phone, Either).\n- A subtle note above submit: 'We typically respond within 24 hours.'\nMake it feel premium and trustworthy.",
+    },
+    {
+      title: "Feedback Form",
+      desc: "Star ratings, categories & NPS",
+      icon: MessageSquare,
+      prompt:
+        "Create a detailed Customer Feedback form with:\n- Name (optional) and Email (required).\n- Overall Experience: 5 visual rating buttons labeled 1-5 (1=Poor, 5=Excellent) styled as selectable pills, currently none selected.\n- Category dropdown: Product Quality, Customer Service, Website Experience, Delivery, Pricing.\n- What did we do well? (textarea, placeholder: 'Tell us what you loved...').\n- What can we improve? (textarea, placeholder: 'Share your suggestions...').\n- Would you recommend us? (radio: Definitely, Probably, Not Sure, Probably Not, Definitely Not).\n- Checkbox: 'I'd like to be contacted about my feedback'.\nMake the rating section visually interesting with colored pills.",
+    },
+    {
+      title: "Event RSVP",
+      desc: "Registration, dietary & preferences",
+      icon: HelpCircle,
+      prompt:
+        "Create an Event Registration / RSVP form with:\n- Attendee Info: Full Name (required), Email (required), Phone (optional).\n- Event Details: Number of Guests (number input, 1-10), Attendance Type (radio: In-Person, Virtual, Undecided).\n- Dietary Requirements: checkboxes (None, Vegetarian, Vegan, Gluten-Free, Halal, Kosher, Other with text input).\n- T-Shirt Size dropdown: XS, S, M, L, XL, XXL.\n- How did you hear about this event? dropdown: Social Media, Email, Friend/Colleague, Website, Other.\n- Special Requirements or Accessibility Needs (optional textarea).\n- Checkbox: 'I agree to the event terms and conditions' (required).\nAdd a friendly header with event branding feel.",
+    },
+    {
+      title: "Job Application",
+      desc: "Resume, experience & skills",
+      icon: UserRound,
+      prompt:
+        "Create a Job Application form with clear sections:\n- Section 1 - Personal Details: Full Name (required), Email (required), Phone Number (required), City/Location (text input).\n- Section 2 - Professional Info: Position Applied For dropdown (Software Engineer, Product Designer, Marketing Manager, Data Analyst, Other), Years of Experience (number input), Current Company (optional), LinkedIn Profile URL (optional, url type).\n- Section 3 - Skills & Qualifications: Highest Education dropdown (High School, Bachelor's, Master's, PhD, Other), Key Skills (textarea, placeholder: 'e.g. JavaScript, React, Project Management'), Why are you a good fit? (textarea, required, min 100 chars).\n- Section 4 - Availability: Earliest Start Date (date input), Work Type Preference (radio: Full-time, Part-time, Contract, Remote).\n- Checkbox: 'I confirm all information provided is accurate' (required).\nUse clear section headers with subtle dividers between groups.",
+    },
+  ];
 
-      const prompt1 = `Generate a responsive Contact Form with fields for Full Name, Email Address, Phone Number, and Message. The form should have proper validation to ensure all required fields are filled and that the email and phone number formats are correct. Include a submit button with a visually appealing design.`;
-      
-      const prompt2 = `Create a user-friendly feedback form that allows users to share their opinions and suggestions. The form should include fields for the user's name (optional), a rating system (e.g., 1 to 5 stars or a satisfaction scale), a text area for detailed feedback, and a dropdown to categorize the feedback type (e.g., Product, Service, Support, Other). Include a submit button and ensure the form is visually appealing and accessible.`;
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(formUrl);
+    toast.success("Copied to clipboard!", { theme: isDark ? "dark" : "light" });
+  };
 
-      const prompt3 = `Create an Inquiry Form that collects user details and their inquiry. The form should include fields for Full Name, Email Address, Phone Number (optional), Subject of Inquiry, and a Detailed Message. Ensure the form has a clean and user-friendly design with proper validation for required fields.`;
-
-      const prompt4 = `Generate a simple Basic Information Form that collects essential personal details. The form should include the following fields:
-
-      Full Name (Text Input) - Required
-      Email Address (Email Input) - Required
-      Phone Number (Number Input) - Required
-      Date of Birth (Date Picker) - Required
-      Gender (Dropdown: Male, Female, Other) - Optional
-      Address (Multiline Text Area) - Optional
-
-      The form should be clean, user-friendly, and responsive. Include basic validation for required fields and ensure proper formatting for email and phone number inputs. At the bottom, provide a Submit button to send the form data. Ensure accessibility and a simple design for easy usability.`;
-
-      if(n==1){
-        setPrompt(prompt1);
-      }
-      if(n==2){
-        setPrompt(prompt2);
-      }
-      if(n==3){
-        setPrompt(prompt3);
-      }
-      if( n==4){
-        setPrompt(prompt4);
-      }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!prompt.trim()) {
+      toast.error("Please enter a prompt", { theme: isDark ? "dark" : "light" });
+      return;
     }
-    const copyToClipboard = () => {
-      navigator.clipboard.writeText(formUrl);
-      toast.success('Copied to clipboard!', {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'colored',
-      });
-    };
-    const handleSubmit = async(e) => {
-      e.preventDefault();
-      setLoader('true');
-      try{
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/ai/generate-content`,{
-          prompt,token
-        })
-        const data = response.data;
-        console.log(data);       
-        if(data.msg == 'Success'){
-          setFormUrl(`https://instaform.vercel.app/api/ai/form/${data.formNo}`);
-          setPrompt('');
-        }
-        if(data.error){
-          toast.error(data.error, {
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: false,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-              transition: Bounce,
-          });
-        }
+    setLoading(true);
+    try {
+      const response = await axios.post(`/api/ai/generate-content`, { prompt, token });
+      const data = response.data;
+      if (data.msg === "Success") {
+        setFormUrl(`${window.location.origin}/api/ai/form/${data.formNo}`);
+        setPrompt("");
       }
-      catch(error){
-        console.error(error);
-        toast.error('Something went wrong !!', {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          transition: Bounce,
-      });
+      if (data.error) {
+        toast.error(data.error, { theme: isDark ? "dark" : "light" });
       }
-      setLoader('');
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong!", { theme: isDark ? "dark" : "light" });
     }
+    setLoading(false);
+  };
+
+  const firstName = user?.name?.split(" ")[0] || "there";
 
   return (
-    <div className={`ml-[17%] w-[83%] min-h-screen flex flex-col justify-center items-center ${theme == 'light' ? 'bg-[#EFEFEF]':'bg-[#191919]'} pt-10`}>
-        <div className={`flex flex-col w-[60vw] ${formUrl ? 'blur-sm' : ''}`}>
-            <h1 className="bg-gradient-to-bl from-[#B100A2] to-[#624AD7] text-transparent bg-clip-text text-5xl font-bold">Hi there, {user.name} <br /> What would you like to create today ?</h1>
-            <h1 className='text-xl text-slate-400 text-left mt-3'>Use one of the most common prompts <br /> below or use your own to begin</h1>
-        </div>
-      <div className={`flex justify-center items-center gap-10 w-[60vw] h-[20vh] mt-10 ${formUrl ? 'blur-sm' : ''}`}>
-        <div onClick={()=>{commonPrompts(1)}} className={`hover:cursor-pointer h-[100%] w-[25%] ${theme == 'light'? 'bg-white text-black': 'bg-[#101010] text-white'} rounded-2xl flex flex-col justify-between p-5 font-bold text-lg tracking-tighter`}>
-            <h1>Create a Contact Form</h1>
-            <MdOutlineContactPage className='text-2xl'/>
-        </div>
-        <div onClick={()=>{commonPrompts(2)}} className={`hover:cursor-pointer h-[100%] w-[25%] ${theme == 'light'? 'bg-white text-black': 'bg-[#101010] text-white'} rounded-2xl flex flex-col justify-between p-5 font-bold text-lg tracking-tighter`}>
-            <h1>Create a Feedback Form</h1>
-            <MdOutlineFeedback className='text-2xl'/>
-        </div>
-        <div onClick={()=>{commonPrompts(3)}} className={`hover:cursor-pointer h-[100%] w-[25%] ${theme == 'light'? 'bg-white text-black': 'bg-[#101010] text-white'} rounded-2xl flex flex-col justify-between p-5 font-bold text-lg tracking-tighter`}>
-            <h1>Generate an Inquiry Form</h1>
-            <FaQuestion className='text-2xl'/>
-        </div>
-        <div onClick={()=>{commonPrompts(4)}} className={`hover:cursor-pointer h-[100%] w-[25%] ${theme == 'light'? 'bg-white text-black': 'bg-[#101010] text-white'} rounded-2xl flex flex-col justify-between p-5 font-bold text-lg tracking-tighter`}>
-            <h1>Create a Basic Information Form</h1>
-            <FaRegUser className='text-2xl'/>
-        </div>
-      </div>
-      <div className={`${theme == 'light' ? 'bg-white text-black' : 'bg-[#101010] text-white'} text-xl w-[60vw] h-[25vh] mt-10 rounded-2xl ${formUrl ? 'blur-sm' : ''}`}>
-        <textarea key={theme} value={prompt} onPaste={handlePaste} onChange={(e)=>{if(prompt.length<1001){setPrompt(e.target.value)}}} name="prompt" id="prompt" className='w-[100%] h-[68%] p-3 focus:outline-none' placeholder='Write your prompt here...'></textarea>
-        <div className='flex gap-5 justify-end items-center px-5'>
-            <h1>{promptlength}/10000</h1>
-            {loader && <button onClick={handleSubmit} className='w-10 h-10 bg-[#634AC6] rounded-xl text-center px-2 hover:cursor-pointer'><FadeLoader className='mx-[12.5px] mt-[17px]' height={8} margin={-10} radius={-13} width={3} color='white' speedMultiplier={2}/>  </button>}
-            {!loader && <button onClick={handleSubmit} className='w-10 h-10 bg-[#634AC6] rounded-xl text-center px-2 hover:cursor-pointer'><FaArrowRight className='text-white text-2xl' /></button>}
-        </div>
-      </div>
-      {formUrl && (
-          <div className={`ml-[10vw] flex flex-col fixed top-1/4 left-1/2 transform -translate-x-1/2 ${theme=='light' ?'bg-[#efefef] border-[2px] border-black': 'bg-[#191919] border-[2px] border-white text-white'} p-5 rounded-xl shadow-lg w-[50vw] h-[40vh]`}>
-              <button
-                  onClick={() => setFormUrl(null)}
-                  className={`rounded-lg !text-right text-2xl ${theme=='light' ? 'text-black': 'text-white'} hover:cursor-pointer`}>
-                  X
-              </button>
-              <div className='flex flex-col items-center mt-4'>
-                <h2 className='text-4xl font-bold mb-2 bg-gradient-to-bl from-[#B100A2] to-[#624AD7] text-transparent bg-clip-text'>Form Created Successfully!</h2>
-                <div className='flex items-center justify-center mt-10'>
-                  <h1 className={`${theme=='light' ? 'text-black': 'text-white'} text-2xl font-bold tracking-tighter mr-3`}>URL to Form : </h1>
-                  <p className='text-xl text-blue-500 break-words'>{formUrl}</p>
-                  <TbCopy onClick={copyToClipboard} className={`${theme=='light' ? 'text-black': 'text-white'} ml-3 text-3xl hover:cursor-pointer`}/>
-                  <a href={formUrl} target='_blank'><HiMiniArrowTopRightOnSquare className={`${theme=='light' ? 'text-black': 'text-white'} ml-3 text-3xl hover:cursor-pointer`} /></a>
-                </div>
-              </div>
-          </div>
-      )}
-      <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick={false}
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="colored"
-          transition={Bounce}
-      />
-    </div>
-  )
-}
+    <div
+      style={{
+        marginLeft: "260px",
+        width: "calc(100% - 260px)",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "40px 48px",
+        position: "relative",
+        background: isDark ? "var(--bg-primary)" : "var(--bg-primary-light)",
+        transition: "background var(--transition-base)",
+      }}
+    >
+      {/* Background orb */}
+      <div style={{ position: "absolute", width: "600px", height: "600px", borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.04) 0%, transparent 70%)", top: "10%", right: "-10%", filter: "blur(80px)", pointerEvents: "none" }} />
 
-export default Create
+      <div style={{ maxWidth: "780px", width: "100%", position: "relative", zIndex: 1 }}>
+        {/* Greeting */}
+        <div className="animate-fade-in" style={{ marginBottom: "40px" }}>
+          <h1 style={{ fontSize: "2.6rem", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.2, marginBottom: "12px" }}>
+            <span style={{ color: isDark ? "var(--text-primary)" : "var(--text-primary-light)" }}>Hi {firstName}, </span>
+            <br />
+            <span className="gradient-text">What would you like to create?</span>
+          </h1>
+          <p style={{ fontSize: "1rem", color: isDark ? "var(--text-secondary)" : "var(--text-secondary-light)" }}>
+            Pick a template below or write your own prompt to generate a form.
+          </p>
+        </div>
+
+        {/* Template Cards */}
+        <div className="animate-fade-in-up" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginBottom: "28px" }}>
+          {promptTemplates.map((tmpl, i) => {
+            const Icon = tmpl.icon;
+            return (
+              <button
+                key={i}
+                onClick={() => setPrompt(tmpl.prompt)}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  padding: "20px",
+                  borderRadius: "var(--radius-lg)",
+                  border: `1px solid ${isDark ? "var(--border-subtle)" : "var(--border-subtle-light)"}`,
+                  background: isDark ? "var(--bg-card)" : "var(--bg-card-light)",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  transition: "all var(--transition-base)",
+                  minHeight: "130px",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.borderColor = "var(--accent-purple)";
+                  e.currentTarget.style.boxShadow = "0 8px 30px rgba(139,92,246,0.12)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.borderColor = isDark ? "var(--border-subtle)" : "var(--border-subtle-light)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <div>
+                  <p style={{ fontSize: "15px", fontWeight: 600, marginBottom: "4px", color: isDark ? "var(--text-primary)" : "var(--text-primary-light)" }}>{tmpl.title}</p>
+                  <p style={{ fontSize: "13px", color: isDark ? "var(--text-muted)" : "var(--text-muted-light)" }}>{tmpl.desc}</p>
+                </div>
+                <Icon size={20} style={{ color: "var(--accent-purple)", marginTop: "12px" }} />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Prompt Input */}
+        <div
+          className="animate-fade-in-up"
+          style={{
+            borderRadius: "var(--radius-lg)",
+            border: `1px solid ${isDark ? "var(--border-subtle)" : "var(--border-subtle-light)"}`,
+            background: isDark ? "var(--bg-card)" : "var(--bg-card-light)",
+            overflow: "hidden",
+            transition: "border-color var(--transition-base)",
+          }}
+        >
+          <textarea
+            value={prompt}
+            onChange={(e) => { if (e.target.value.length <= 10000) setPrompt(e.target.value); }}
+            placeholder="Describe the form you want to create..."
+            style={{
+              width: "100%",
+              minHeight: "140px",
+              padding: "20px 24px",
+              border: "none",
+              outline: "none",
+              resize: "none",
+              fontSize: "15px",
+              lineHeight: 1.6,
+              background: "transparent",
+              color: isDark ? "var(--text-primary)" : "var(--text-primary-light)",
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "12px 20px",
+              borderTop: `1px solid ${isDark ? "var(--border-subtle)" : "var(--border-subtle-light)"}`,
+            }}
+          >
+            <span style={{ fontSize: "13px", color: isDark ? "var(--text-muted)" : "var(--text-muted-light)" }}>
+              {prompt.length.toLocaleString()} / 10,000
+            </span>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="btn-primary"
+              style={{ padding: "10px 20px", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              {loading ? (
+                <><Loader2 size={18} className="animate-spin" /> Generating…</>
+              ) : (
+                <><Sparkles size={18} /> Generate Form</>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Success Modal */}
+      {formUrl && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "24px" }}
+          onClick={() => setFormUrl(null)}
+        >
+          <div
+            className="glass animate-scale-in"
+            style={{ width: "100%", maxWidth: "520px", padding: "40px", borderRadius: "var(--radius-2xl)", textAlign: "center", boxShadow: "var(--shadow-glow)", position: "relative" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button onClick={() => setFormUrl(null)} style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
+              <X size={20} />
+            </button>
+
+            <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "rgba(34,197,94,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+              <CheckCircle2 size={28} style={{ color: "#22c55e" }} />
+            </div>
+
+            <h2 className="gradient-text" style={{ fontSize: "1.6rem", fontWeight: 700, marginBottom: "8px" }}>Form Created!</h2>
+            <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>Your form is live and ready to collect responses.</p>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", borderRadius: "var(--radius-md)", background: isDark ? "var(--bg-tertiary)" : "var(--bg-tertiary-light)", marginBottom: "24px" }}>
+              <p style={{ flex: 1, fontSize: "13px", color: "var(--accent-purple)", wordBreak: "break-all", textAlign: "left" }}>{formUrl}</p>
+              <button onClick={copyToClipboard} style={{ background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer", flexShrink: 0 }}>
+                <Copy size={18} />
+              </button>
+              <a href={formUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-secondary)", flexShrink: 0 }}>
+                <ExternalLink size={18} />
+              </a>
+            </div>
+
+            <button onClick={() => setFormUrl(null)} className="btn-primary" style={{ width: "100%", padding: "12px", fontSize: "14px" }}>
+              Create Another Form
+            </button>
+          </div>
+        </div>
+      )}
+
+      <ToastContainer position="top-right" autoClose={4000} theme={isDark ? "dark" : "light"} transition={Bounce} />
+    </div>
+  );
+};
+
+export default Create;

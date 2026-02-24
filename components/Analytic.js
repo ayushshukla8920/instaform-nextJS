@@ -1,121 +1,165 @@
-"use client"
-import React, { useEffect, useState } from 'react'
-import { IoMdArrowRoundBack } from "react-icons/io";
-import axios from 'axios';
-import { FaFileExcel } from "react-icons/fa";
-import { ToastContainer, toast, Bounce } from 'react-toastify';
-import FadeLoader from "react-spinners/FadeLoader";
-import { useParams } from 'next/navigation';
-import { useGlobalContext } from '@/context/GlobalContext';
-import { useRouter } from 'next/navigation';
+"use client";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import { useParams, useRouter } from "next/navigation";
+import { useGlobalContext } from "@/context/GlobalContext";
+import { ArrowLeft, Download, Loader2, BarChart3, Inbox } from "lucide-react";
 
 const Analytic = () => {
-  const { token,theme } = useGlobalContext();
-  const [count,setCount] = useState(0);
-  const [responses,setResponses] = useState('');
-  const [loader,setLoader] = useState('');
-  const {formNo} = useParams();
+  const { token, theme } = useGlobalContext();
+  const isDark = theme !== "light";
+  const [count, setCount] = useState(0);
+  const [responses, setResponses] = useState([]);
+  const [downloading, setDownloading] = useState(false);
+  const { formNo } = useParams();
   const router = useRouter();
+
   const downloadCSV = async () => {
-    setLoader(true);
+    setDownloading(true);
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/excel/download`, 
-        { formNo, token }, 
-        { responseType: 'blob' }
-      );
-      const url = window.URL.createObjectURL(new Blob([response.data]));      
-      const link = document.createElement('a');
+      const response = await axios.post(`/api/excel/download`, { formNo, token }, { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `Responses_${formNo}.csv`);
+      link.setAttribute("download", `Responses_${formNo}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      toast.success('Download Successful', {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'colored',
-      });
+      toast.success("Download complete!", { theme: isDark ? "dark" : "light" });
     } catch (error) {
-      console.error('Error downloading CSV', error);
-      toast.error('Error downloading File', {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          transition: Bounce,
-      });
+      toast.error("Error downloading file", { theme: isDark ? "dark" : "light" });
     }
-    setLoader('');
-  }
-  const fetchForms = async () => {
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/analytics/get/${formNo}`, { token });
-      if(response.data.responses){
-        setCount(response.data.responses.length);
-        setResponses(response.data.responses);
-      }
-    } catch (error) {
-      console.error("Error fetching forms:", error);
-    }
+    setDownloading(false);
   };
 
   useEffect(() => {
-    fetchForms();
+    const fetchAnalytics = async () => {
+      try {
+        const response = await axios.post(`/api/analytics/get/${formNo}`, { token });
+        if (response.data.responses) {
+          setCount(response.data.responses.length);
+          setResponses(response.data.responses);
+        }
+      } catch (error) {
+        console.error("Error fetching analytics:", error);
+      }
+    };
+    fetchAnalytics();
   }, []);
-  return (
-    <div className={`ml-[17%] w-full min-h-screen flex flex-col px-10 ${theme == 'light' ? 'bg-[#EFEFEF]':'bg-[#191919] text-white'} pt-6 pb-[10vh]`}>
-      <div className='flex justify-between items-center mt-5'>
-        <button onClick={()=>{router.push('/forms')}} className='bg-gradient-to-bl from-[#B100A2] to-[#624AD7] text-white rounded-xl ml-5 h-10 w-10 flex items-center justify-center hover:cursor-pointer'><IoMdArrowRoundBack className='text-3xl' /></button>
-        <h1 className='ml-5 text-3xl font-bold bg-gradient-to-bl from-[#B100A2] to-[#624AD7] text-transparent bg-clip-text'>Analytics for {formNo}</h1>
-      </div>
-      <br /><hr /><br />
-      <div className='w-[100%] py-5 h-[10vh] flex items-center justify-between bg-gradient-to-bl from-[#B100A2] to-[#624AD7] text-white px-10 rounded-3xl'>
-        <h1 className='text-xl tracking-tight font-bold'>Total number of Responses : </h1>
-        <h1 className='text-5xl font-bold'>{count}</h1>
-      </div>
-      <div className='flex items-center justify-between mt-10 mb-5 pr-5'>
-        <h1 className='text-3xl font-bold tracking-tight ml-10'>Responses</h1>
-        {!loader && <button onClick={downloadCSV} className='flex items-center justify-center text-xl tracking-tighter font-bold bg-[#167C46] text-white px-4 py-2 rounded-2xl hover:cursor-pointer'><FaFileExcel className='text-2xl text-white mr-3'/>Download as Excel (.csv)</button>}
-        {loader && <button onClick={downloadCSV} className='flex items-center justify-center text-xl tracking-tighter font-bold bg-[#167C46] text-white px-[4vw] rounded-2xl hover:cursor-pointer'><FadeLoader className='mr-3 mt-5' height={8} margin={-10} radius={-13} width={3} color='white' speedMultiplier={2}/> Downloading...</button>}
-      </div>
-      <div className="flex flex-col gap-3">
-      {responses.length > 0 ? (
-        responses.map((form, index) => (
-          <div key={index} className={`${theme == 'light' ? 'bg-white':'bg-[#101010]'} shadow-md rounded-lg flex flex-col py-3 px-10 justify-between`}>
-            {Object.entries(form).map(([key, value], idx) => (
-              <h1 key={idx}><strong>{key}:</strong> {value}</h1>
-            ))}
-          </div>
-        ))
-      ) : (
-        <p className="text-gray-500 ml-10 mt-5">No Responses available.</p>
-      )}
-      </div>
-      <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick={false}
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="colored"
-          transition={Bounce}
-      />
-    </div>
-  )
-}
 
-export default Analytic
+  return (
+    <div
+      style={{
+        marginLeft: "260px",
+        width: "calc(100% - 260px)",
+        minHeight: "100vh",
+        padding: "40px 48px",
+        background: isDark ? "var(--bg-primary)" : "var(--bg-primary-light)",
+        transition: "background var(--transition-base)",
+      }}
+    >
+      {/* Header */}
+      <div className="animate-fade-in" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
+        <button
+          onClick={() => router.push("/forms")}
+          style={{
+            width: "40px", height: "40px", borderRadius: "var(--radius-md)",
+            border: `1px solid ${isDark ? "var(--border-medium)" : "var(--border-medium-light)"}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "transparent", color: isDark ? "var(--text-primary)" : "var(--text-primary-light)",
+            cursor: "pointer", transition: "all var(--transition-base)",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--accent-purple)"; e.currentTarget.style.color = "var(--accent-purple)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = isDark ? "var(--border-medium)" : "var(--border-medium-light)"; e.currentTarget.style.color = isDark ? "var(--text-primary)" : "var(--text-primary-light)"; }}
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <div>
+          <h1 className="gradient-text" style={{ fontSize: "1.8rem", fontWeight: 700, letterSpacing: "-0.03em" }}>Analytics</h1>
+          <p style={{ fontSize: "13px", color: isDark ? "var(--text-muted)" : "var(--text-muted-light)" }}>Form: {formNo}</p>
+        </div>
+      </div>
+
+      <div style={{ height: "1px", background: isDark ? "var(--border-subtle)" : "var(--border-subtle-light)", marginBottom: "28px" }} />
+
+      {/* Stats card */}
+      <div
+        className="animate-fade-in-up"
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "24px 32px", borderRadius: "var(--radius-lg)",
+          background: "var(--gradient-primary)", marginBottom: "32px",
+          boxShadow: "0 8px 32px rgba(139,92,246,0.2)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          <BarChart3 size={24} style={{ color: "rgba(255,255,255,0.8)" }} />
+          <span style={{ fontSize: "1rem", fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>Total Responses</span>
+        </div>
+        <span style={{ fontSize: "3rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em" }}>{count}</span>
+      </div>
+
+      {/* Responses header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h2 style={{ fontSize: "1.3rem", fontWeight: 600, color: isDark ? "var(--text-primary)" : "var(--text-primary-light)" }}>Responses</h2>
+        <button
+          onClick={downloadCSV}
+          disabled={downloading}
+          style={{
+            display: "flex", alignItems: "center", gap: "8px",
+            padding: "10px 20px", borderRadius: "var(--radius-md)",
+            background: "#16a34a", color: "#fff", border: "none",
+            cursor: "pointer", fontSize: "14px", fontWeight: 600,
+            transition: "background var(--transition-base)",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "#15803d"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "#16a34a"; }}
+        >
+          {downloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+          {downloading ? "Downloading…" : "Export CSV"}
+        </button>
+      </div>
+
+      {/* Responses List */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px", paddingBottom: "40px" }}>
+        {responses.length > 0 ? (
+          responses.map((resp, index) => (
+            <div
+              key={index}
+              className="animate-fade-in-up"
+              style={{
+                padding: "20px 24px", borderRadius: "var(--radius-lg)",
+                border: `1px solid ${isDark ? "var(--border-subtle)" : "var(--border-subtle-light)"}`,
+                background: isDark ? "var(--bg-card)" : "var(--bg-card-light)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", paddingBottom: "10px", borderBottom: `1px solid ${isDark ? "var(--border-subtle)" : "var(--border-subtle-light)"}` }}>
+                <span style={{ fontSize: "11px", fontWeight: 600, padding: "2px 10px", borderRadius: "20px", background: "var(--gradient-glow)", color: "var(--accent-purple)" }}>
+                  #{index + 1}
+                </span>
+              </div>
+              {Object.entries(resp).map(([key, value], idx) => (
+                <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: "6px", fontSize: "14px" }}>
+                  <span style={{ fontWeight: 600, minWidth: "120px", color: isDark ? "var(--text-secondary)" : "var(--text-secondary-light)" }}>{key}:</span>
+                  <span style={{ color: isDark ? "var(--text-primary)" : "var(--text-primary-light)" }}>{String(value)}</span>
+                </div>
+              ))}
+            </div>
+          ))
+        ) : (
+          <div style={{ textAlign: "center", padding: "64px 0", color: isDark ? "var(--text-muted)" : "var(--text-muted-light)" }}>
+            <Inbox size={48} style={{ margin: "0 auto 16px", opacity: 0.3 }} />
+            <p style={{ fontSize: "1rem", fontWeight: 500 }}>No responses yet</p>
+            <p style={{ fontSize: "14px", marginTop: "4px" }}>Responses will appear here once users submit the form.</p>
+          </div>
+        )}
+      </div>
+
+      <ToastContainer position="top-right" autoClose={3000} theme={isDark ? "dark" : "light"} transition={Bounce} />
+    </div>
+  );
+};
+
+export default Analytic;

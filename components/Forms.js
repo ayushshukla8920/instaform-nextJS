@@ -1,137 +1,145 @@
-"use client"
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { TbCopy } from "react-icons/tb";
-import { ToastContainer, toast, Bounce } from 'react-toastify';
-import { HiMiniArrowTopRightOnSquare } from "react-icons/hi2";
-import { MdDelete } from "react-icons/md";
-import { useRouter } from 'next/navigation';
-import { useGlobalContext } from '@/context/GlobalContext';
+"use client";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { useGlobalContext } from "@/context/GlobalContext";
+import { Copy, ExternalLink, Trash2, BarChart3, Pencil, FileText, Loader2 } from "lucide-react";
 
 const Forms = () => {
-  const { token,formData,setFormData,theme } = useGlobalContext();
-  const [loading,setLoading] = useState(true);
+  const { token, formData, setFormData, theme } = useGlobalContext();
+  const [loading, setLoading] = useState(true);
+  const isDark = theme !== "light";
   const router = useRouter();
-  const fetchForms = async (setFormData) => {
+
+  const fetchForms = async () => {
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/user/forms`, { token });
+      const response = await axios.post(`/api/user/forms`, { token });
       setFormData(response.data);
     } catch (error) {
       console.error("Error fetching forms:", error);
     }
     setLoading(false);
   };
-  const handleAnalytics = async(formNo)=>{
-    router.push(`/forms/analytics/${formNo}`);
-  }
-  const handleDelete = async(formNo)=>{
-    const isConfirmed = window.confirm("Are you sure you want to delete this form?");
-    if (!isConfirmed) return;
+
+  const handleDelete = async (formNo) => {
+    if (!window.confirm("Are you sure you want to delete this form?")) return;
     try {
-      const deleteResponse = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/ai/delete/${formNo}`, {token});
-      if(deleteResponse.data.msg){
-        toast.success('Form Deleted Successfully', {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'colored',
-      });
-      fetchForms(setFormData);
+      const res = await axios.post(`/api/ai/delete/${formNo}`, { token });
+      if (res.data.msg) {
+        toast.success("Form deleted successfully", { theme: isDark ? "dark" : "light" });
+        fetchForms();
       }
-      if(deleteResponse.data.error){
-        toast.error(deleteResponse.data.error, {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          transition: Bounce,
-      });
-      }
+      if (res.data.error) toast.error(res.data.error, { theme: isDark ? "dark" : "light" });
     } catch (error) {
-      console.error("Error fetching forms:", error);
-      toast.error('Something went wrong !!', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: false,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-        transition: Bounce,
-    });
+      toast.error("Something went wrong!", { theme: isDark ? "dark" : "light" });
     }
-  }
-  const copyToClipboard = (formurl) => {
-    navigator.clipboard.writeText(formurl);
-    toast.success('Copied to clipboard!', {
-        position: 'top-right',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'colored',
-    });
   };
 
-  useEffect(() => {
-    fetchForms(setFormData);
-  }, []);
+  const copyToClipboard = (url) => {
+    navigator.clipboard.writeText(url);
+    toast.success("Copied to clipboard!", { theme: isDark ? "dark" : "light" });
+  };
+
+  useEffect(() => { fetchForms(); }, []);
 
   return (
-    <div className={`ml-[17%] w-[83%] min-h-screen flex flex-col px-10 ${theme=='light' ? 'bg-[#EFEFEF]' : 'bg-[#191919]' } pt-10`}>
-      <h1 className='ml-10 mt-5 text-5xl font-bold bg-gradient-to-bl from-[#B100A2] to-[#624AD7] text-transparent bg-clip-text'>
-        Your Forms:
-      </h1>
-      <br /><hr /><br />
-      <div className="flex flex-col gap-3 pb-[10vh]">
-        {formData.length > 0 ? (
-          formData.map((form, index) => (
-            <div key={index} className={`${theme=='light' ? 'bg-white text-black' : 'bg-[#101010] text-white' } shadow-md rounded-lg flex items-center gap-5 py-3 px-10 justify-between`}>
-              <h2 className="text-xl font-semibold w-[20%]">{form.formName}</h2>
-              <div className='flex items-center justify-center w-[50%]'>
-                <p className="text-blue-500 text-lg">{`${process.env.NEXT_PUBLIC_URL}/api/ai/form/${form.formNo}`}</p>
-                <TbCopy onClick={()=>{copyToClipboard(`${process.env.NEXT_PUBLIC_URL}/api/ai/form/${form.formNo}`)}} className='ml-10 text-xl hover:cursor-pointer' />
-                <a href={`${process.env.NEXT_PUBLIC_URL}/api/ai/form/${form.formNo}`} target='_blank'><HiMiniArrowTopRightOnSquare className='ml-3 text-xl hover:cursor-pointer' /></a>
+    <div
+      style={{
+        marginLeft: "260px",
+        width: "calc(100% - 260px)",
+        minHeight: "100vh",
+        padding: "40px 48px",
+        background: isDark ? "var(--bg-primary)" : "var(--bg-primary-light)",
+        transition: "background var(--transition-base)",
+      }}
+    >
+      {/* Header */}
+      <div className="animate-fade-in" style={{ marginBottom: "32px" }}>
+        <h1 className="gradient-text" style={{ fontSize: "2.2rem", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: "8px" }}>My Forms</h1>
+        <p style={{ fontSize: "15px", color: isDark ? "var(--text-secondary)" : "var(--text-secondary-light)" }}>
+          Manage and track all your generated forms in one place.
+        </p>
+      </div>
+
+      <div style={{ height: "1px", background: isDark ? "var(--border-subtle)" : "var(--border-subtle-light)", marginBottom: "28px" }} />
+
+      {/* Forms list */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px", paddingBottom: "40px" }}>
+        {loading ? (
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "40px 0", justifyContent: "center" }}>
+            <Loader2 size={24} className="animate-spin" style={{ color: "var(--accent-purple)" }} />
+            <span style={{ color: isDark ? "var(--text-secondary)" : "var(--text-secondary-light)" }}>Loading forms…</span>
+          </div>
+        ) : formData.length > 0 ? (
+          formData.map((form, index) => {
+            const formUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/api/ai/form/${form.formNo}`;
+            return (
+              <div
+                key={index}
+                className="animate-fade-in-up"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "16px",
+                  padding: "18px 24px",
+                  borderRadius: "var(--radius-lg)",
+                  border: `1px solid ${isDark ? "var(--border-subtle)" : "var(--border-subtle-light)"}`,
+                  background: isDark ? "var(--bg-card)" : "var(--bg-card-light)",
+                  transition: "all var(--transition-base)",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "var(--shadow-card)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+              >
+                {/* Left */}
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", flex: 1, minWidth: 0 }}>
+                  <div style={{ width: "40px", height: "40px", borderRadius: "var(--radius-md)", background: "var(--gradient-glow)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <FileText size={20} style={{ color: "var(--accent-purple)" }} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <h3 style={{ fontSize: "15px", fontWeight: 600, color: isDark ? "var(--text-primary)" : "var(--text-primary-light)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{form.formName}</h3>
+                    <p style={{ fontSize: "12px", color: "var(--accent-purple)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "300px" }}>{formUrl}</p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                  <button onClick={() => copyToClipboard(formUrl)} title="Copy URL"
+                    style={{ width: "36px", height: "36px", borderRadius: "var(--radius-sm)", border: `1px solid ${isDark ? "var(--border-subtle)" : "var(--border-subtle-light)"}`, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", color: isDark ? "var(--text-secondary)" : "var(--text-secondary-light)", cursor: "pointer", transition: "all var(--transition-fast)" }}>
+                    <Copy size={16} />
+                  </button>
+                  <a href={formUrl} target="_blank" rel="noopener noreferrer">
+                    <button style={{ width: "36px", height: "36px", borderRadius: "var(--radius-sm)", border: `1px solid ${isDark ? "var(--border-subtle)" : "var(--border-subtle-light)"}`, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", color: isDark ? "var(--text-secondary)" : "var(--text-secondary-light)", cursor: "pointer", transition: "all var(--transition-fast)" }}>
+                      <ExternalLink size={16} />
+                    </button>
+                  </a>
+                  <button onClick={() => router.push(`/forms/analytics/${form.formNo}`)} className="btn-primary" style={{ padding: "8px 16px", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <BarChart3 size={15} /> Analytics
+                  </button>
+                  <button onClick={() => router.push("/editor/" + form.formNo)} className="btn-secondary" style={{ padding: "8px 16px", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Pencil size={15} /> Edit
+                  </button>
+                  <button onClick={() => handleDelete(form.formNo)} title="Delete"
+                    style={{ width: "36px", height: "36px", borderRadius: "var(--radius-sm)", border: "1px solid rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", color: "#ef4444", cursor: "pointer", transition: "all var(--transition-fast)" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
-              <button onClick={()=>{handleAnalytics(form.formNo)}} className="hover:cursor-pointer px-4 py-2 bg-gradient-to-bl from-[#B100A2] to-[#624AD7] text-lg text-white rounded w-[12%]">
-                Analytics
-              </button>
-              <button onClick={()=>{router.push('/editor/'+form.formNo)}} className="hover:cursor-pointer px-4 py-2 bg-blue-600 text-lg text-white rounded w-[8%]">
-                Editor
-              </button>
-              <button onClick={()=>{handleDelete(form.formNo)}} className="h-10 w-10 text-white rounded flex items-center justify-center hover:cursor-pointer">
-                <MdDelete className='text-3xl text-red-500' />
-              </button>
-            </div>
-          ))
+            );
+          })
         ) : (
-          <p className="text-gray-500">{!loading ? 'No forms available':'Loading....'}</p>
+          <div style={{ textAlign: "center", padding: "64px 0", color: isDark ? "var(--text-muted)" : "var(--text-muted-light)" }}>
+            <FileText size={48} style={{ margin: "0 auto 16px", opacity: 0.3 }} />
+            <p style={{ fontSize: "1rem", fontWeight: 500 }}>No forms yet</p>
+            <p style={{ fontSize: "14px", marginTop: "4px" }}>Create your first form using the AI generator.</p>
+          </div>
         )}
       </div>
-      <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick={false}
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="colored"
-          transition={Bounce}
-      />
+
+      <ToastContainer position="top-right" autoClose={3000} theme={isDark ? "dark" : "light"} transition={Bounce} />
     </div>
   );
 };

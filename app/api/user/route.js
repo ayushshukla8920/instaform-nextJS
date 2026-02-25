@@ -23,7 +23,7 @@ export const POST = async (req) => {
             );
         }
         const userResponse = await User.findOne(
-            { email: decoded.email },
+            { email: decoded },
             { password: 0 }
         );
         if (!userResponse) {

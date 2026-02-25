@@ -17,7 +17,6 @@ export const GET = async (req, { params }) => {
             },
             { new: true, upsert: true }
         );
-        // Re-sign token with JWT_SECRET so all API routes can verify consistently
         const unifiedToken = jsonwebtoken.sign(AuthData.email, process.env.JWT_SECRET);
         const redirectUrl = `${process.env.NEXTAUTH_URL}/google/${unifiedToken}`;
         return NextResponse.redirect(redirectUrl);

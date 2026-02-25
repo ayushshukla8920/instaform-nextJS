@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* ===== Design Tokens ===== */
 :root {
   --bg-primary: #0a0a0f;
   --bg-secondary: #111118;
@@ -30,7 +29,6 @@
   --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Light theme overrides */
   --bg-primary-light: #f8f8fc;
   --bg-secondary-light: #ffffff;
   --bg-tertiary-light: #f0f0f6;
@@ -44,7 +42,6 @@
   --text-muted-light: #9e9eb8;
 }
 
-/* ===== Global Resets ===== */
 * {
   margin: 0;
   padding: 0;
@@ -63,7 +60,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ===== Scrollbar ===== */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -81,7 +77,6 @@ body {
   background: var(--text-secondary);
 }
 
-/* ===== Animations ===== */
 @keyframes slide {
   0% {
     left: -33%;

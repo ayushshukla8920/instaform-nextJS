@@ -1,28 +1,43 @@
 import connectToDB from '@/lib/db';
 import { NextResponse } from 'next/server';
 const jwt = require('jsonwebtoken');
-const user = require('@/models/user');
+const User = require('@/models/user');
 
 export const POST = async (req) => {
     await connectToDB();
     try {
         const { token } = await req.json();
         if (!token) {
-            return NextResponse.json({ error: "Un-Authorised Access" }, { status: 200 });
+            return NextResponse.json(
+                { error: "Un-Authorized Access" },
+                { status: 401 }
+            );
         }
-        let email;
+        let decoded;
         try {
-            email = jwt.verify(token, process.env.JWT_SECRET);
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
         } catch (e) {
-            return NextResponse.json({ error: "Invalid or expired token" }, { status: 200 });
+            return NextResponse.json(
+                { error: "Invalid or expired token" },
+                { status: 401 }
+            );
         }
-        const userResponse = await user.findOne({ email });
+        const userResponse = await User.findOne(
+            { email: decoded.email },
+            { password: 0 }
+        );
         if (!userResponse) {
-            return NextResponse.json({ error: "Un-Authorised Access" }, { status: 200 });
+            return NextResponse.json(
+                { error: "Un-Authorized Access" },
+                { status: 401 }
+            );
         }
         return NextResponse.json(userResponse, { status: 200 });
     } catch (error) {
         console.log(error);
-        return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Something went wrong" },
+            { status: 500 }
+        );
     }
-}
+};

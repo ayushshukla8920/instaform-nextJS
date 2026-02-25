@@ -79,7 +79,6 @@ export const POST = async (req) => {
         if (responseText.includes("Invalid Prompt.")) {
             return NextResponse.json({ error: "Invalid Prompt." }, { status: 200 });
         }
-        // Clean up any code fences the AI might accidentally add
         let cleanHTML = responseText
             .replace(/^```html?\s*/i, '')
             .replace(/```\s*$/i, '')
